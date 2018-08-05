@@ -14,6 +14,8 @@ namespace Thruster
         readonly int processorCount;
         readonly long[] leasing;
 
+        bool disposed;
+
         public FastMemoryPool()
         {
             var count = Math.Min(Environment.ProcessorCount, 64);
@@ -29,6 +31,11 @@ namespace Thruster
 
         public override IMemoryOwner<T> Rent(int size = -1)
         {
+            if (disposed)
+            {
+                throw new ObjectDisposedException("MemoryPool has been disposed.");
+            }
+
             if (size <= 0)
             {
                 size = 1;
@@ -87,7 +94,10 @@ namespace Thruster
 
         public override int MaxBufferSize => 32 * ChunkSize; // half of the max is provided
 
-        protected override void Dispose(bool disposing) { }
+        protected override void Dispose(bool disposing)
+        {
+            disposed = true;
+        }
 
         class Owner : IMemoryOwner<T>
         {

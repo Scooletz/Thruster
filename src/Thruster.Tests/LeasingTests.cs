@@ -5,7 +5,7 @@ namespace Thruster.Tests
     public class LeasingTests
     {
         [Test]
-        public void Lease_and_Release_Should_leave_all_bits_0([Values(1, 32, 33, 63)]int consecutive)
+        public void LeaseAndReleaseShouldLeaveAllBitsUnset([Values(1, 32, 33, 63)]int consecutive)
         {
             var v = 0L;
 
@@ -22,7 +22,7 @@ namespace Thruster.Tests
         [TestCase(0x0000_0000_0000_FFFF, 16)]
         [TestCase(0x0000_0000_00FF_FFFF, 24)]
         [TestCase(0x7FFF_FFFF_FFFF_FFFF, 63)]
-        public void Lease_Should_find_first_gap(long value, short expected)
+        public void LeaseShouldFindFirstMatchingGap(long value, short expected)
         {
             const int consecutive = 1;
             var v = value;
@@ -36,7 +36,7 @@ namespace Thruster.Tests
         }
 
         [Test]
-        public void Lease_Should_return_negative_when_no_space()
+        public void LeaseShouldReturnNegativeNumberWhenNoSpace()
         {
             var i = ~0L;
 
