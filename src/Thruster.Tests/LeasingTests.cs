@@ -13,7 +13,7 @@ namespace Thruster.Tests
             Assert.AreEqual(0, lease);
 
             Leasing.Release(ref v, consecutive, lease);
-            
+
             Assert.AreEqual(0L, v);
         }
 
@@ -33,6 +33,16 @@ namespace Thruster.Tests
             Leasing.Release(ref v, consecutive, lease);
 
             Assert.AreEqual(value, v);
+        }
+
+        [Test]
+        public void Lease_Should_return_negative_when_no_space()
+        {
+            var i = ~0L;
+
+            var lease = Leasing.Lease(ref i, 1, 1);
+
+            Assert.AreEqual(-1, lease);
         }
     }
 }
