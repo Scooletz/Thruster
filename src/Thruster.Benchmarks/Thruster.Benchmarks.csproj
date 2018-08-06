@@ -8,7 +8,12 @@
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.11.0" />
     <PackageReference Include="System.Memory" Version="4.5.1" />
-    <PackageReference Include="Thruster" Version="1.0.0-alpha0007" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Thruster">
+      <HintPath>..\Thruster\bin\Release\netcoreapp2.1\Thruster.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

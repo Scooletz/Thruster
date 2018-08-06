@@ -1,4 +1,6 @@
-﻿namespace Thruster
+﻿using System.Runtime.CompilerServices;
+
+namespace Thruster
 {
     static class Util
     {
@@ -9,6 +11,7 @@
         /// <remarks>
         /// No branching :D
         /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int AlignToMultipleOf(this int value, int alignment)
         {
             return (value + (alignment - 1)) & ~(alignment - 1);
@@ -21,6 +24,7 @@
         /// <remarks>
         /// No branching :D
         /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long AlignToMultipleOf(this long value, long alignment)
         {
             return (value + (alignment - 1)) & ~(alignment - 1);

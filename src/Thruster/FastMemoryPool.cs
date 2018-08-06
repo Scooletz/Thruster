@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Buffers;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Thruster
 {
     public class FastMemoryPool<T> : MemoryPool<T>
     {
-        const int ChunkSize = 4 * 1024;
+        internal const int ChunkSize = 4 * 1024;
+        internal const int ChunkSizeLog = 12;
         const int LeasingOffset = Util.CacheLineSize / 8;
+        const int ChunksPerCpu = 64;
 
         readonly T[] memory;
         readonly int processorCount;
@@ -19,9 +20,9 @@ namespace Thruster
         public FastMemoryPool()
         {
             var count = Math.Min(Environment.ProcessorCount, 64);
-            var chunkCount = count * 64;
+            var chunkCount = count * ChunksPerCpu;
             var allocSize = chunkCount * ChunkSize;
-            
+
             leasing = new long[(count + 2) * LeasingOffset];
 
             memory = new T[allocSize];
@@ -42,21 +43,21 @@ namespace Thruster
             }
 
             var capacity = size.AlignToMultipleOf(ChunkSize);
-            var chunkCount = capacity / ChunkSize;
+            var chunkCount = capacity >> ChunkSizeLog;
 
             var processorId = GetProcessorId();
 
             //try local processor first
-            var owner = Lease(processorId, chunkCount, capacity);
+            var owner = Lease(processorId, chunkCount);
             if (owner != null)
             {
                 return owner;
             }
 
-            return LeaseSlowPath(processorId, chunkCount, capacity);
+            return LeaseSlowPath(processorId, chunkCount);
         }
 
-        Owner Lease(int processorId, int chunkCount, int capacity)
+        Owner Lease(int processorId, int chunkCount)
         {
             var index = (short)((processorId + 1) * LeasingOffset);
             ref var slot = ref leasing[index];
@@ -64,14 +65,14 @@ namespace Thruster
             var lease = Leasing.Lease(ref slot, chunkCount, 3);
             if (lease >= 0)
             {
-                var offset = processorId * 64 + lease;
-                return new Owner(new Memory<T>(memory, offset, capacity), index, lease, leasing);
+                var offset = (processorId * ChunksPerCpu + lease) << ChunkSizeLog;
+                return new Owner(new Memory<T>(memory, offset, chunkCount << ChunkSizeLog), index, lease, leasing);
             }
 
             return default;
         }
 
-        IMemoryOwner<T> LeaseSlowPath(int processorId, int chunkCount, int capacity)
+        IMemoryOwner<T> LeaseSlowPath(int processorId, int chunkCount)
         {
             var spin = new SpinWait();
             for (var i = 0; i < processorCount; i++)
@@ -79,7 +80,7 @@ namespace Thruster
                 spin.SpinOnce();
                 processorId = (processorId + i) % processorCount;
 
-                var owner = Lease(processorId, chunkCount, capacity);
+                var owner = Lease(processorId, chunkCount);
                 if (owner != null)
                 {
                     return owner;
@@ -87,7 +88,7 @@ namespace Thruster
             }
 
             // allocate if none is found
-            return new Owner(new Memory<T>(new T[capacity]), 0, 0, null);
+            return new Owner(new Memory<T>(new T[chunkCount * ChunkSize]), 0, 0, null);
         }
 
         public override int MaxBufferSize => 32 * ChunkSize; // half of the max is provided
