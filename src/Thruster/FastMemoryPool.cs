@@ -8,7 +8,7 @@ namespace Thruster
     {
         internal const int ChunkSize = 4 * 1024;
         internal const int ChunkSizeLog = 12;
-        internal const int ChunksPerCpu = 64;
+        internal const int ChunksPerCpu = Leasing.ChunksPerLeaseLong;
         internal const int MaxGen = 3;
         const int LeasingOffset = Util.CacheLineSize / 8;
 

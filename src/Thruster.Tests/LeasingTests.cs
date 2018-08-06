@@ -17,11 +17,13 @@ namespace Thruster.Tests
             Assert.AreEqual(0L, v);
         }
 
+        [TestCase(0x0000_0000_0000_0000, 0)]
         [TestCase(0x0000_0000_0000_0001, 1)]
         [TestCase(0x0000_0000_0000_0003, 2)]
         [TestCase(0x0000_0000_0000_FFFF, 16)]
         [TestCase(0x0000_0000_00FF_FFFF, 24)]
-        [TestCase(0x7FFF_FFFF_FFFF_FFFF, 63)]
+        [TestCase(0x3FFF_FFFF_FFFF_FFFF, 62)]
+        [TestCase(0x7FFF_FFFF_FFFF_FFFF, Leasing.NoSpace)]
         public void LeaseShouldFindFirstMatchingGap(long value, short expected)
         {
             const int consecutive = 1;
@@ -30,9 +32,11 @@ namespace Thruster.Tests
 
             Assert.AreEqual(expected, lease);
 
-            Leasing.Release(ref v, consecutive, lease);
-
-            Assert.AreEqual(value, v);
+            if (lease >= 0)
+            {
+                Leasing.Release(ref v, consecutive, lease);
+                Assert.AreEqual(value, v);
+            }
         }
 
         [Test]

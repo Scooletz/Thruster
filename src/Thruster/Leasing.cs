@@ -16,8 +16,9 @@ namespace Thruster
     /// </summary>
     static class Leasing
     {
-        const short NoSpace = -1;
-        const short NotFound = -2;
+        internal const short NoSpace = -1;
+        internal const short NotFound = -2;
+        internal const int ChunksPerLeaseLong = 63;
 
         /// <summary>
         /// Simply calculates 2^n - 1;
@@ -29,7 +30,7 @@ namespace Thruster
 
         public static short Lease(ref long v, int continousItems, int retries)
         {
-            var length = 64 - continousItems;
+            var length = ChunksPerLeaseLong + 1 - continousItems;
             var mask = GetMask(continousItems);
 
             // initially, the value is read from ref v. Later, if leasing fails, is obtained from CompareExchange.
@@ -57,7 +58,7 @@ namespace Thruster
                 var result = Interlocked.CompareExchange(ref v, newValue, value);
                 if (result == value)
                 {
-                    return (short) i;
+                    return (short)i;
                 }
 
                 // leasing attempt failed, retry with the recently obtained value
