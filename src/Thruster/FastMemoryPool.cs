@@ -65,8 +65,6 @@ namespace Thruster
             if (lease >= 0)
             {
                 var offset = processorId * 64 + lease;
-                MemoryMarshal.CreateFromPinnedArray(memory, offset, capacity);
-
                 return new Owner(new Memory<T>(memory, offset, capacity), index, lease, leasing);
             }
 
