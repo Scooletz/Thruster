@@ -4,7 +4,7 @@ using System.Threading;
 namespace Thruster
 {
     /// <summary>
-    /// This class is responsible for managing leases of continuous bits 1111 over a ref long. This means that any lease cannot be claimed for more than 63 consecutive elements.
+    /// This class is responsible for managing leases of conitnous bits 1111 over a ref long. This means that any lease cannot be claimed for more than 63 consecutive elements
     ///
     /// A lease of specific length n is represented as a n consecutive bits set to 1. This mask is easily calculated: 2^n - 1.
     /// 
@@ -29,7 +29,7 @@ namespace Thruster
 
         public static short Lease(ref long v, int continousItems, int retries)
         {
-            var length = 65 - continousItems;
+            var length = 64 - continousItems;
             var mask = GetMask(continousItems);
 
             // initially, the value is read from ref v. Later, if leasing fails, is obtained from CompareExchange.

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using NUnit.Framework;
 
@@ -6,7 +8,8 @@ namespace Thruster.Tests
 {
     public class FastMemoryPoolTests
     {
-        static FastMemoryPool<byte> CreatePool() => new FastMemoryPool<byte>();
+        const int CoreCount = 1;
+        static FastMemoryPool<byte> CreatePool() => new FastMemoryPool<byte>(CoreCount);
 
         [Test]
         public void CanDisposeAfterCreation()
@@ -53,6 +56,32 @@ namespace Thruster.Tests
 
                 Assert.AreEqual(offset1 + size, segment2.Offset);
                 Assert.AreEqual(size, segment2.Count);
+            }
+        }
+
+        [Test]
+        public void SaturatingGeneration0MovesAllocationsToGeneration1()
+        {
+            const int size = FastMemoryPool<byte>.ChunkSize;
+
+            using (var memoryPool = CreatePool())
+            {
+                var owners = new List<IMemoryOwner<byte>>();
+                var arrays = new HashSet<byte[]>();
+
+                for (var gen = 0; gen < 3; gen++)
+                {
+                    for (var i = 0; i < 63; i++)
+                    {
+                        var owner = memoryPool.Rent(1);
+                        MemoryMarshal.TryGetArray((ReadOnlyMemory<byte>)owner.Memory, out var segment);
+                        arrays.Add(segment.Array);
+
+                        Assert.AreEqual(size << gen, segment.Count);
+                    }
+
+                    Assert.AreEqual(gen + 1, arrays.Count);
+                }
             }
         }
 
