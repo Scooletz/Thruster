@@ -11,7 +11,7 @@ Thruster is based on (some) understanding on nowadays CPUs and low level APIs pr
 - efficient data encoding - bitmasks used for leasing, are designed to use 1 `CAS` operation for renting (when no collisions) and one, branchless unconditional `Interlocked.Add` to release
 
 ## Benchmarks
-Some benchmarks that you need to take with a grain of salt. More will come later.
+Some single threaded benchmarks run with awesome BenchmarkDotNet. The nesting level represents multiple `.Rent` operations.
 
 ``` ini
 
@@ -33,6 +33,7 @@ Frequency=2531250 Hz, Resolution=395.0617 ns, Timer=TSC
 | Shared_2_nested_Rents | 287.89 ns | 5.087 ns | 4.510 ns |
 | Shared_3_nested_Rents | 408.50 ns | 7.217 ns | 6.751 ns |
 
+Multi threaded app depends on the nesting level even more. If there's no nesting, results are comparable. Any nesting will drastically point towards using Thruster.
 
 ## Icon
 
