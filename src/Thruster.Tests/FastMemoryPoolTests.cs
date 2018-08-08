@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Buffers;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using NUnit.Framework;
 
@@ -40,7 +40,7 @@ namespace Thruster.Tests
         [Test]
         public void LeasedSegmentsAreConsecutive()
         {
-            const int size = FastMemoryPool<byte>.ChunkSize;
+            var size = default(Size4K).GetChunkSize();
 
             using (var memoryPool = CreatePool())
             using (var o1 = memoryPool.Rent(1))
@@ -59,31 +59,55 @@ namespace Thruster.Tests
             }
         }
 
-        [Test]
-        public void SaturatingGeneration0MovesAllocationsToGeneration1()
-        {
-            const int size = FastMemoryPool<byte>.ChunkSize;
+        //[Test]
+        //public void SaturatingGeneration0MovesAllocationsToGeneration1()
+        //{
+        //    const int size = FastMemoryPool<byte>.ChunkSize;
 
+        //    using (var memoryPool = CreatePool())
+        //    {
+        //        var owners = new List<IMemoryOwner<byte>>();
+        //        var arrays = new HashSet<byte[]>();
+
+        //        for (var gen = 0; gen < 3; gen++)
+        //        {
+        //            for (var i = 0; i < 63; i++)
+        //            {
+        //                var owner = memoryPool.Rent(1);
+        //                MemoryMarshal.TryGetArray((ReadOnlyMemory<byte>)owner.Memory, out var segment);
+        //                arrays.Add(segment.Array);
+
+        //                Assert.AreEqual(size << gen, segment.Count);
+        //            }
+
+        //            Assert.AreEqual(gen + 1, arrays.Count);
+        //        }
+        //    }
+        //}
+
+        [Test]
+        public void UpAndDown()
+        {
             using (var memoryPool = CreatePool())
             {
-                var owners = new List<IMemoryOwner<byte>>();
-                var arrays = new HashSet<byte[]>();
+                var owners = new ConcurrentQueue<IMemoryOwner<byte>>();
 
-                for (var gen = 0; gen < 3; gen++)
+                for (int j = 0; j < 10; j++)
                 {
-                    for (var i = 0; i < 63; i++)
+                    for (var i = 0; i < 63 + 1; i++)
                     {
                         var owner = memoryPool.Rent(1);
-                        MemoryMarshal.TryGetArray((ReadOnlyMemory<byte>)owner.Memory, out var segment);
-                        arrays.Add(segment.Array);
-
-                        Assert.AreEqual(size << gen, segment.Count);
+                        owners.Enqueue(owner);
                     }
 
-                    Assert.AreEqual(gen + 1, arrays.Count);
+                    while (owners.TryDequeue(out var o))
+                    {
+                        o.Dispose();
+                    }
                 }
             }
         }
+
 
         [Test]
         public void LeasingFromDisposedPoolThrows()

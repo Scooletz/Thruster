@@ -16,12 +16,12 @@ namespace Thruster.Benchmarks
         }
 
         [Benchmark] public void Mine_1_Rent() => Kilo1(_circular);
-        [Benchmark] public void Mine_2_nested_Rents() => Kilo2(_circular);
-        [Benchmark] public void Mine_3_nested_Rents() => Kilo3(_circular);
+        //[Benchmark] public void Mine_2_nested_Rents() => Kilo2(_circular);
+        //[Benchmark] public void Mine_3_nested_Rents() => Kilo3(_circular);
 
         [Benchmark] public void Shared_1_Rent() => Kilo1(_shared);
-        [Benchmark] public void Shared_2_nested_Rents() => Kilo2(_shared);
-        [Benchmark] public void Shared_3_nested_Rents() => Kilo3(_shared);
+        //[Benchmark] public void Shared_2_nested_Rents() => Kilo2(_shared);
+        //[Benchmark] public void Shared_3_nested_Rents() => Kilo3(_shared);
 
         static void Kilo1(MemoryPool<byte> pool)
         {

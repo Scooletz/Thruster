@@ -7,18 +7,16 @@ namespace Thruster
     /// This class is responsible for managing leases of conitnous bits 1111 over a ref long. This means that any lease cannot be claimed for more than 63 consecutive elements
     ///
     /// A lease of specific length n is represented as a n consecutive bits set to 1. This mask is easily calculated: 2^n - 1.
-    /// 
-    /// Leasing is done by using Interlocked.CompareExchange to swap the previous value with a new value containing n consecutive bits set. This might be retried if another thread/task Leases or Releases a segment.
-    /// 
-    /// Releasing is done in a much simpler manner. As the lease is represented by a mask at a specific position, we can easily use Interlocked.Add(ref _, -mask) to set these bits back to zeroes.
-    /// As there can be only one lease over the specific segment, this operation requires no retries and will always succeed.
-    /// 
     /// </summary>
-    static class Leasing
+    struct Leasing
     {
-        internal const short NoSpace = -1;
-        internal const short NotFound = -2;
+        readonly PaddedLong[] masks;
         internal const int ChunksPerLeaseLong = 63;
+
+        public Leasing(int size)
+        {
+            masks = new PaddedLong[size + 2];
+        }
 
         /// <summary>
         /// Simply calculates 2^n - 1;
@@ -28,7 +26,16 @@ namespace Thruster
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static long GetMask(int continousItems) => (1L << continousItems) - 1;
 
-        public static short Lease(ref long v, int continousItems, int retries)
+        public static long Lease(ref Leasing leasing, int index, int continousItems, int retries) => Lease(ref leasing.masks[index + 1].Value, continousItems, retries);
+
+        /// <summary>
+        /// Returns a positive position of the continousItem, or negative value that was observed as the last, providing opportunity to base selection of the bucket on this value.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="continousItems"></param>
+        /// <param name="retries"></param>
+        /// <returns></returns>
+        static long Lease(ref long v, int continousItems, int retries)
         {
             var length = ChunksPerLeaseLong + 1 - continousItems;
             var mask = GetMask(continousItems);
@@ -36,43 +43,36 @@ namespace Thruster
             // initially, the value is read from ref v. Later, if leasing fails, is obtained from CompareExchange.
             var value = Volatile.Read(ref v);
 
-            for (var approach = 0; approach < retries; approach++)
+            var i = 0;
+            for (; i < length & retries > 0; i++)
             {
-                var newValue = value;
-                var i = 0;
-                for (; i < length; i++)
+                if ((value & mask) == 0)
                 {
-                    if ((value & (mask << i)) == 0)
+                    var nextValue = value | mask;
+
+                    var result = Interlocked.CompareExchange(ref v, nextValue, value);
+                    if (result == value)
                     {
-                        newValue |= mask << i;
-                        break;
+                        return i;
                     }
+
+                    // leasing attempt failed, retry with the recently obtained value from the last not checked index
+                    value = result;
+                    retries--;
                 }
 
-                // if there's no free space in v, just return
-                if (i == length)
-                {
-                    return NoSpace;
-                }
-
-                var result = Interlocked.CompareExchange(ref v, newValue, value);
-                if (result == value)
-                {
-                    return (short)i;
-                }
-
-                // leasing attempt failed, retry with the recently obtained value
-                value = result;
+                mask <<= 1;
             }
 
-            return NotFound;
+            return -value;
         }
 
-        public static void Release(ref long v, int continousItems, short lease)
+        public static void Release(ref Leasing leasing, int index, int continousItems, short lease) =>
+            Release(ref leasing.masks[index + 1].Value, continousItems, lease);
+
+        static void Release(ref long v, int continousItems, short lease)
         {
-            var value = GetMask(continousItems);
-            value <<= lease;
-            Interlocked.Add(ref v, -value);
+            Intelocked2.Xor(ref v, lease, continousItems);
         }
     }
 }
