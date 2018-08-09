@@ -3,17 +3,16 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.11.0" />
-    <PackageReference Include="System.Memory" Version="4.5.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="2.1.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Thruster">
-      <HintPath>..\Thruster\bin\Release\netcoreapp2.1\Thruster.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\Thruster\Thruster.csproj" />
   </ItemGroup>
 
 </Project>
