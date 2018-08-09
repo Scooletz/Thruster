@@ -1,4 +1,5 @@
-﻿using BenchmarkDotNet.Running;
+﻿using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Running;
 
 namespace Thruster.Benchmarks
 {
@@ -6,7 +7,7 @@ namespace Thruster.Benchmarks
     {
         static void Main(string[] args)
         {
-            var summary = BenchmarkRunner.Run<AgainstSharedPool>();
+            var summary = BenchmarkRunner.Run(typeof(PipeThroughputBenchmark).Assembly, DefaultConfig.Instance);
         }
     }
 }

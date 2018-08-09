@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Thruster\Thruster.csproj" />
     <PackageReference Include="System.IO.Pipelines" Version="4.5.0" />
+    <PackageReference Include="System.Memory" Version="4.5.1" />
   </ItemGroup>
 
 </Project>

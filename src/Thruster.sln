@@ -12,8 +12,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Thruster.Benchmarks", "Thru
 		{29E64937-3DC8-43CA-BE5E-98BF654BA86D} = {29E64937-3DC8-43CA-BE5E-98BF654BA86D}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Thruster.ThreadedApp", "Thruster.ThreadedApp\Thruster.ThreadedApp.csproj", "{40C6A3CF-0EC7-4011-A59B-37482488C59E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,10 +30,6 @@ Global
 		{A3789782-53D7-4835-9792-29694F68D0FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3789782-53D7-4835-9792-29694F68D0FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3789782-53D7-4835-9792-29694F68D0FE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{40C6A3CF-0EC7-4011-A59B-37482488C59E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{40C6A3CF-0EC7-4011-A59B-37482488C59E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{40C6A3CF-0EC7-4011-A59B-37482488C59E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{40C6A3CF-0EC7-4011-A59B-37482488C59E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
