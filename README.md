@@ -1,3 +1,5 @@
+This project is dicontinued. Although it was able to be faster than the default shared implementation, it's not faster than Kestrel's pool. More reasoning: https://blog.scooletz.com/2018/08/14/thruster-building-a-not-so-fast-memory-pool/
+
 ![Icon](https://raw.githubusercontent.com/Scooletz/Thruster/master/package_icon.png)
 
 # Thruster
